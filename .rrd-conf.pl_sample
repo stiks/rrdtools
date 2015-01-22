@@ -1,0 +1,88 @@
+# $Id: sample.conf,v 1.11 2007-08-05 13:59:58 mitch Exp $
+#
+# Sample configuration file for RRD scripts
+#
+# edit and copy to ~/.rrd-conf.pl
+
+##
+## Global configuration
+
+sub load_graph_definitions
+{
+    my $Canvas = 'FFFFFF';
+
+    my $FullRed    = 'FF0000';
+    my $FullGreen  = '00E000';
+    my $FullBlue   = '0000FF';
+    my $FullYellow = 'F0A000';
+    my $FullCyan   = '00A0FF';
+    my $FullMagenta= 'A000FF';
+
+    my $HalfRed    = 'F7B7B7';
+    my $HalfGreen  = 'B7EFB7';
+    my $HalfBlue   = 'B7B7F7';
+    my $HalfYellow = 'F3DFB7';
+    my $HalfCyan   = 'B7DFF7';
+    my $HalfMagenta= 'DFB7F7';
+
+    my $HalfBlueGreen = '89B3C9';
+}
+
+# Where are the RRD databases?
+$conf{DBPATH} = '/hosting/default/rrd/data';
+
+# Where are the pictures and html pages?
+$conf{OUTPATH} = '/hosting/default/web/rrd/images';
+
+# Which kernel is being used?  ('2.4' and '2.6' are supported).
+$conf{KERNEL} = '3.2';
+
+# How wide should the graphs be?
+$conf{GRAPH_WIDTH} = 450;
+
+# How tall should the graphs be?
+$conf{GRAPH_HEIGHT} = 160;
+
+##
+## diskfree script
+
+# These 20 mount points are shown in the diskfree script.
+# Enter '' for non-existant mount points.
+$conf{DISKFREE_PATHS} = [
+   '/',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+];
+
+##
+## network script
+
+# Enter your network devices with name and input/output ratio.
+# For tunnels, an optional 4th parameter with the "interface name" is available.
+$conf{NETWORK_DEVICES} = [ # device    in_max,  out_max, {name}
+   [ 'eth0', 15000000, 15000000],
+];
+
+##
+## internal stuff
+
+# expand home directories
+$conf{DBPATH}  =~ s/^~/$ENV{HOME}/;
+$conf{OUTPATH} =~ s/^~/$ENV{HOME}/;

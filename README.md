@@ -8,7 +8,5 @@ This is my config to generate RRD graphs
 
 To make it running, need to install some Perl modules and perl itself
 
-`apt-get install librrds-perl rrdtool`
-`apt-get install perl-libwww-perl`
-`apt-get install libwww-perl`
+1. `apt-get install librrds-perl rrdtool libwww-perl`
 
