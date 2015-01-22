@@ -30,20 +30,20 @@ chomp $hostname;
 if ( ! -e $datafile ) {
     # max 3G/5G for each value
     RRDs::create($datafile,
-		 "DS:used:GAUGE:600:0:3000000000",
-		 "DS:free:GAUGE:600:0:3000000000",
-		 "DS:buffer:GAUGE:600:0:3000000000",
-		 "DS:cache:GAUGE:600:0:3000000000",
-		 "DS:swap_used:GAUGE:600:0:8000000000",
-		 "DS:swap_free:GAUGE:600:0:8000000000",
-		 "RRA:AVERAGE:0.5:1:600",
-		 "RRA:AVERAGE:0.5:6:700",
-		 "RRA:AVERAGE:0.5:24:775",
-		 "RRA:AVERAGE:0.5:288:797"
-		 );
-      $ERR=RRDs::error;
-      die "ERROR while creating $datafile: $ERR\n" if $ERR;
-      print "created $datafile\n";
+        "DS:used:GAUGE:600:0:3000000000",
+        "DS:free:GAUGE:600:0:3000000000",
+        "DS:buffer:GAUGE:600:0:3000000000",
+        "DS:cache:GAUGE:600:0:3000000000",
+        "DS:swap_used:GAUGE:600:0:8000000000",
+        "DS:swap_free:GAUGE:600:0:8000000000",
+        "RRA:AVERAGE:0.5:1:600",
+        "RRA:AVERAGE:0.5:6:700",
+        "RRA:AVERAGE:0.5:24:775",
+        "RRA:AVERAGE:0.5:288:797"
+    );
+    $ERR=RRDs::error;
+    die "ERROR while creating $datafile: $ERR\n" if $ERR;
+    print "created $datafile\n";
 }
 
 # get memory usage
@@ -56,19 +56,19 @@ if ($version =~ /^MemTotal/) {
     my $total = $2;
     my $swap_total;
     while (my $line = <PROC>) {
-	if ($line =~ /^([^:]+):\s+(\d+) kB$/) {
-	    if ($1 eq "MemFree") {
-		$free = $2;
-	    } elsif ($1 eq "Buffers") {
-		$buffer = $2;
-	    } elsif ($1 eq "Cached") {
-		$cache = $2;
-	    } elsif ($1 eq "SwapTotal") {
-		$swap_total = $2;
-	    } elsif ($1 eq "SwapFree") {
-		$swap_free = $2;
-	    }
-	}
+        if ($line =~ /^([^:]+):\s+(\d+) kB$/) {
+            if ($1 eq "MemFree") {
+                $free = $2;
+            } elsif ($1 eq "Buffers") {
+                $buffer = $2;
+            } elsif ($1 eq "Cached") {
+                $cache = $2;
+            } elsif ($1 eq "SwapTotal") {
+                $swap_total = $2;
+            } elsif ($1 eq "SwapFree") {
+                $swap_free = $2;
+            }
+        }
     }
     $total *= 1024;
     $buffer *= 1024;
@@ -92,9 +92,7 @@ if ($version =~ /^MemTotal/) {
 close PROC or die "can't close /proc/meminfo: $!\n";
 
 # update database
-RRDs::update($datafile,
-	     "N:${used}:${free}:${buffer}:${cache}:${swap_used}:${swap_free}"
-	     );
+RRDs::update($datafile,"N:${used}:${free}:${buffer}:${cache}:${swap_used}:${swap_free}");
 $ERR=RRDs::error;
 die "ERROR while updating $datafile: $ERR\n" if $ERR;
 
@@ -102,42 +100,40 @@ die "ERROR while updating $datafile: $ERR\n" if $ERR;
 foreach ( [3600, "hour"], [86400, "day"], [604800, "week"], [31536000, "year"] ) {
     my ($time, $scale) = @{$_};
     RRDs::graph($picbase . $scale . ".png",
-		"--start=-${time}",
-		'--lazy',
-		'--imgformat=PNG',
-		"-c","BACK#FFFFFF",
-                "--border=0",
+        "--start=-${time}",
+        '--lazy',
+        '--imgformat=PNG',
+        "-c","BACK#FFFFFF",
+        "--border=0",
 
-		"-c","BACK#FF000000",
-		"-c","CANVAS#FFFFFF00",
-		"-c","SHADEA#FF000000",
-		"-c","SHADEB#FF000000",
+        "-c","BACK#FF000000",
+        "-c","CANVAS#FFFFFF00",
+        "-c","SHADEA#FF000000",
+        "-c","SHADEB#FF000000",
 
-		"--title=${hostname} memory usage (last $scale)",
-		'--base=1024',
-		"--width=$conf{GRAPH_WIDTH}",
-		"--height=$conf{GRAPH_HEIGHT}",
+        "--title=${hostname} memory usage (last $scale)",
+        '--base=1024',
+        "--width=$conf{GRAPH_WIDTH}",
+        "--height=$conf{GRAPH_HEIGHT}",
 
-		"DEF:used_x=${datafile}:used:AVERAGE",
-		"DEF:free=${datafile}:free:AVERAGE",
-		"DEF:buffer=${datafile}:buffer:AVERAGE",
-		"DEF:cache=${datafile}:cache:AVERAGE",
-		"DEF:swap_used=${datafile}:swap_used:AVERAGE",
-		"DEF:swap_free=${datafile}:swap_free:AVERAGE",
+        "DEF:used_x=${datafile}:used:AVERAGE",
+        "DEF:free=${datafile}:free:AVERAGE",
+        "DEF:buffer=${datafile}:buffer:AVERAGE",
+        "DEF:cache=${datafile}:cache:AVERAGE",
+        "DEF:swap_used=${datafile}:swap_used:AVERAGE",
+        "DEF:swap_free=${datafile}:swap_free:AVERAGE",
 
-		'CDEF:used=used_x,buffer,-,cache,-',
-		'CDEF:swap_total=0,swap_free,-,swap_used,-',
-		'CDEF:swap_used_x=0,swap_used,-',
-		'CDEF:total_x=0,used,+,free,+,buffer,+',
+        'CDEF:used=used_x,buffer,-,cache,-',
+        'CDEF:swap_total=0,swap_free,-,swap_used,-',
+        'CDEF:swap_used_x=0,swap_used,-',
+        'CDEF:total_x=0,used,+,free,+,buffer,+',
 
-		'AREA:used#FF0000:mem used',
-		'STACK:buffer#ffb000:mem buffer',
-		'STACK:cache#4169E1:mem cache',
-		'STACK:free#32CD32:mem free',
-#		'AREA:swap_total',
-		'AREA:swap_used_x#7000E0:swap used',
-#		'STACK:swap_free#60D050:swap free',
-		);
+        'AREA:used#FF0000:mem used',
+        'STACK:buffer#ffb000:mem buffer',
+        'STACK:cache#4169E1:mem cache',
+        'STACK:free#32CD32:mem free',
+        'AREA:swap_used_x#7000E0:swap used',
+    );
     $ERR=RRDs::error;
     die "ERROR while drawing $datafile $time: $ERR\n" if $ERR;
 }
